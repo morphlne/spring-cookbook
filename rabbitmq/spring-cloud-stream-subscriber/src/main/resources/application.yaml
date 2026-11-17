@@ -1,0 +1,30 @@
+server:
+  port: 8081
+spring:
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+  cloud:
+    stream:
+      rabbit:
+        bindings:
+          #must match binging from InputMessageChannel.class
+          message-input:
+            consumer:
+              #exchange DLX &
+              #queue 'message-processing.message-processing-group.dlq' will be created for dead letters
+              #routing key = 'message-processing.message-processing-group'
+              autoBindDlq: true
+      bindings:
+        #must match binging from InputMessageChannel.class
+        message-input:
+          #exchange 'message-processing' will be created on RabbitMQ
+          #routing key '#' = all messages from exchange passed to queue
+          #each subscriber has own queue 'message-processing.anonymous...', if group not specified = all subscribers handle each message
+          destination: message-processing
+          #queue 'message-processing.message-processing-group' will be created for all subscribers = only one subscriber handle message
+          group: message-processing-group
+      default:
+        contentType: application/json
